@@ -6,13 +6,13 @@ from time import sleep
 
 
 # Changing current directory
-os.chdir("\\".join(os.path.realpath(__file__).split('\\')[:-1]))
+os.chdir(os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1]))
 
 CONFIG = dotenv_values('.env')
 HOST = socket.gethostbyname(socket.gethostname())
 PORT = int(CONFIG["PORT"])
 POOL_SIZE = int(CONFIG["POOL_SIZE"])
-client_pool = {} #Client set
+CLIENT_POOL = {} #Client set
 
 class ThreadingClient(Thread):
     """
@@ -40,9 +40,9 @@ class ThreadingClient(Thread):
             message = f"{name} >>>> {msgClient}"
             print(message)
             #Broadcast the message to the others
-            for key in client_pool:
+            for key in CLIENT_POOL:
                 if key != name:
-                    client_pool[key].send(message.encode('Utf8'))
+                    CLIENT_POOL[key].send(message.encode('Utf8'))
             
         #Closing the connexion
         try:
@@ -50,7 +50,7 @@ class ThreadingClient(Thread):
             self.isConnected = False
         except:pass
         #The client leaves the pool
-        del client_pool[name]
+        del CLIENT_POOL[name]
         print(f">>>> Client {name} disconnected !")
 
     
@@ -74,12 +74,13 @@ if __name__ == "__main__":
 
     #Waiting for clients
     while 1:
-        sleep(0.005)
-        (connexion, address) = _socket.accept()
-        # New client has come
-        client = ThreadingClient(connexion,address)
-        # Reserving a place in the pool
-        client_pool[client.getName()] = connexion
-        client.start()
-        print(f">>>> {client}")
-        connexion.send("SERVER >>>>: You are connected. Ready to listen...".encode('Utf8'))
+        sleep(0.05)
+        if(len(CLIENT_POOL) < POOL_SIZE):
+            (connexion, address) = _socket.accept()
+            # New client has come
+            client = ThreadingClient(connexion,address)
+            # Reserving a place in the pool
+            CLIENT_POOL[client.getName()] = connexion
+            client.start()
+            print(f">>>> {client}")
+            connexion.send("SERVER >>>>: You are connected. Ready to listen...".encode('Utf8'))

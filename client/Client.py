@@ -4,7 +4,7 @@ from dotenv import dotenv_values
 
 
 # Changing current directory
-os.chdir("\\".join(os.path.realpath(__file__).split('\\')[:-1]))
+os.chdir(os.sep.join(os.path.realpath(__file__).split(os.sep)[:-1]))
 
 # initializing host and port
 CONFIG = dotenv_values('./.env')
@@ -74,3 +74,5 @@ if __name__ == "__main__":
     th_R = ThreadReception(connexion,th_E)
     th_R.start()
     th_E.start()
+
+    #{"type":"GET","path":"/log","args":["Hello"]}
