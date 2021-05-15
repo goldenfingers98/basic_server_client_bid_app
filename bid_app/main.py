@@ -10,6 +10,6 @@ def logMessage(message):
 
 
 
-Server.initialize(port=3001,pool_size=5)
+Server.initialize(port=3000,pool_size=5)
 Server.get(path='/log',callable=logMessage)
 Server.run_application()
