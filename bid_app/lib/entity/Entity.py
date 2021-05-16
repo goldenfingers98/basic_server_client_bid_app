@@ -1,0 +1,47 @@
+from abc import abstractmethod
+import sys
+import os
+from lib.repository.Repository import Repository
+
+class Entity:
+    FILE = ''
+    PATH = f'{sys.path[0]}{os.sep}public{os.sep}'+'{}'
+    def __init__(self):
+        pass
+        
+    @classmethod
+    def serialize(cls,string):
+        """
+            Transform a file entry to Entity.
+        """
+        attributes = []
+        # Getting the class attributes params
+        params = list(cls.__slots__.values())
+        for item,attr in zip(string.split('\t'),params):
+            if issubclass(type(attr['type']),Entity): # That means if the attribute is an Entity
+                # Preparing the entity
+                obj = cls(cls.__slots__.values()[0]['type'](id))
+                # Synchronize the attribute
+                Repository.repositoryMap[type(obj)].synchronize(obj)
+                # Pushing the attribute
+                attributes.append(obj)
+            else:
+                # Pushing the attribute
+                attributes.append(attr['type'](item))
+        return cls.__constructor(*attributes)
+
+    @classmethod
+    def __constructor(cls,*args):
+        obj = cls()
+        # Getting the class attributes params
+        params = list(cls.__slots__.values())
+        # 
+        for attr,arg in zip(params,args):
+            getattr(obj,attr['setter'])(arg)
+        return obj
+
+    def update(self,obj):
+        # Getting Class attributes params
+        params = list(self.__slots__.values())
+        for param in params:
+            getattr(obj,param['setter'])(getattr(obj,param['getter'])())

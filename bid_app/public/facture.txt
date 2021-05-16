@@ -1,0 +1,2 @@
+Identificateur Acheteur	Somme à payer
+1555	5455
