@@ -62,8 +62,11 @@ class Server:
 
     @staticmethod
     def broadcast(message):
-         for key in Server.CLIENT_POOL:
-            Server.CLIENT_POOL[key].send(message.encode('Utf8'))
+        message = message.strip("'").strip('"')
+        serialized_msg = {'message':message,'status':255}
+        message = json.dumps(serialized_msg)
+        for key in Server.CLIENT_POOL:
+           Server.CLIENT_POOL[key].send(message.encode('Utf8'))
 
     class __Client(Thread):
         """

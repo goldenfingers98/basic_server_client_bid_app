@@ -1,4 +1,4 @@
-from sys import path
+import sys ,time
 from lib.client.Client import Client
 import socket
 
@@ -12,4 +12,5 @@ Client.openSession(HOST,3000)
 # Client.set_listening_status(True)
 Client.get('/log',callback)
 Client.post('/postTest',callback,"Hello world")
+
 Client.killSession()

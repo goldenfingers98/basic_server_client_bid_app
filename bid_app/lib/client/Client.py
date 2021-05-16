@@ -161,7 +161,7 @@ class Client:
             Client.Send_signal_sem.release()
             self.alive = False
             # Closing the connexion even if the reciever is blocked on recieving
-            self.connexion.close()
+            self.connexion.shutdown(socket.SHUT_RDWR)
             print("Sys>>>> Client is shutdown.")
 
     class __Reciever(Thread):
@@ -203,7 +203,7 @@ class Client:
                     break
             self.th_E.stop()
             print("Sys>>>> Reciever is shutdown")
-            self.connexion.close()
+            self.connexion.shutdown(socket.SHUT_RDWR)
 
         def stop(self):
             self.alive = False
