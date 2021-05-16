@@ -2,6 +2,7 @@ from abc import abstractmethod
 import sys
 import os
 from lib.repository.Repository import Repository
+from datetime import datetime
 
 class Entity:
     FILE = ''
@@ -18,13 +19,19 @@ class Entity:
         # Getting the class attributes params
         params = list(cls.__slots__.values())
         for item,attr in zip(string.split('\t'),params):
-            if issubclass(type(attr['type']),Entity): # That means if the attribute is an Entity
-                # Preparing the entity
-                obj = cls(cls.__slots__.values()[0]['type'](id))
-                # Synchronize the attribute
-                Repository.repositoryMap[type(obj)].synchronize(obj)
+            if issubclass(attr['type'],Entity): # That means if the attribute is an Entity
+                if item == 'None':
+                    obj = None
+                else:
+                    # Preparing the entity
+                    attr_params = list(attr['type'].__slots__.values())
+                    obj = attr['type'](attr_params[0]['type'](item))
+                    # Synchronize the attribute
+                    Repository.repositoryMap[type(obj)].synchronize(obj)
                 # Pushing the attribute
                 attributes.append(obj)
+            elif attr['type'] == datetime:
+                 attributes.append(datetime.strptime(item,"%Y-%m-%d %H:%M:%S"))
             else:
                 # Pushing the attribute
                 attributes.append(attr['type'](item))

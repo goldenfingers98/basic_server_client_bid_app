@@ -1,2 +1,36 @@
-Rï¿½fï¿½rence Objet	Prix Dï¿½part	Dernier Prix	Etat	Acheteur
-
+Référence Objet	Prix Départ	Dernier Prix	Etat	Acheteur
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None
+150	0	0	Vendu	None

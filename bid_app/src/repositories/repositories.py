@@ -6,3 +6,10 @@ class BuyerRepository(Repository):
 
 class AssetRepository(Repository):
     CLASS = Asset
+
+class HistoryRepository(Repository):
+    CLASS = History
+
+    @staticmethod
+    def findHistoriesByAsset(asset):
+        return [item for item in HistoryRepository.entities if item and item.getAsset() == asset]

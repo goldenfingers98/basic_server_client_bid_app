@@ -28,7 +28,7 @@ def replace_line(file_path, index, subst):
 
 class Repository:
     PATH = ''
-    HEADERS =''
+    HEADERS = ''
     entities = []
     CLASS = None
     repositoryMap = {}
@@ -42,33 +42,36 @@ class Repository:
         try:
             file = open(type(self).PATH,'r')
             type(self).entities = [type(self).CLASS.serialize(item.strip('\n')) for item in file.readlines()[1:]]
+            type(self).entities.append(None)
+        except Repository.RepositoryException as err:
+            raise err
         except Exception as err:
             file = open(type(self).PATH,'w')
             file.write(type(self).HEADERS)
         finally:
             file.close()
-    
-    def getClass(self):
-        return self.CLASS
 
-    def save(self,obj):
-        if(obj in type(self).entities): # If the object exists already in the file
-            index = type(self).entities.index(obj)+1
-            replace_line(type(self).PATH,index,str(obj))
+    @classmethod
+    def save(cls,obj):
+        if(obj in cls.entities): # If the object exists already in the file
+            index = cls.entities.index(obj)+1
+            replace_line(cls.PATH,index,str(obj))
         else:
             try:
-                file = open(type(self).PATH,'a')
+                file = open(cls.PATH,'a')
             except:
-                file = open(type(self).PATH,'w')
+                file = open(cls.PATH,'w')
             finally:
                 file.write(str(obj))
-                type(self).entities.append(obj)
+                cls.entities.append(obj)
                 file.close()
 
     @classmethod
     def synchronize(cls,obj):
+        # Getting Class attributes params
+        params = list(cls.CLASS.__slots__.values())
         try:
-            temp = cls.findById(getattr(obj.params[0]['getter'])())
+            temp = cls.findById(getattr(obj,params[0]['getter'])())
             obj.update(temp)
             
         except Exception as err:
@@ -80,8 +83,9 @@ class Repository:
         params = list(cls.CLASS.__slots__.values())
         # Seeking the item
         for item in cls.entities:
-            if getattr(item,params[0]['getter'])() == id:
-                return item
+            if item != None:
+                if getattr(item,params[0]['getter'])() == id:
+                    return item
         raise Repository.RepositoryException('Entity not found.')
         
     class RepositoryException(Exception):

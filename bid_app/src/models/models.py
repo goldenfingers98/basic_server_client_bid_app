@@ -41,13 +41,18 @@ class Buyer(Entity):
 class Asset(Entity):
     FILE = "bien.txt"
     HEADERS = ["Référence Objet","Prix Départ","Dernier Prix","Etat","Acheteur"]
-    def __init__(self,ref=0,starting_price=0):
+    __next_ref = 0
+    def __init__(self,ref=-1,buyer=None,starting_price=0):
         super().__init__()
-        self.__ref = ref
+        if ref == -1:
+            self.__ref = Asset.__next_ref
+            Asset.__next_ref += 1
+        else:
+            self.__ref = ref
         self.__starting_price = starting_price
         self.__last_price = starting_price
         self.__state = 'Vendu'
-        self.__buyer = None
+        self.__buyer = buyer
 
     def getRef(self):
         return self.__ref
@@ -60,6 +65,9 @@ class Asset(Entity):
 
     def getState(self):
         return self.__state
+
+    def getBuyer(self):
+        return self.__buyer
 
     def setRef(self,ref):
         self.__ref = ref
@@ -115,7 +123,7 @@ class Asset(Entity):
 class History(Entity):
     FILE = "historique.txt"
     HEADERS = ["Identificateur Acheteur","Proposition Valeur","Résultat"]
-    def __init__(self,proposal,result,asset,buyer):
+    def __init__(self,proposal=0,result='echec',asset=None,buyer=None):
         super().__init__()
         self.__date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.__proposal = proposal
@@ -154,13 +162,23 @@ class History(Entity):
         self.__buyer = Buyer
 
     def __str__(self):
-        return f'{self.__date}\t{self.__buyer.getId()}\t{self.__proposal}\t{self.__result}\n'
+        return f'{self.__date}\t{self.__buyer.getId()}\t{self.__asset.getRef()}\t{self.__proposal}\t{self.__result}\n'
 
     __slots__ = {
         '__date':{
             'type':datetime,
             'getter':'getDate',
             'setter':'setDate'
+        },
+        '__buyer':{
+            'type':Buyer,
+            'getter':'getBuyer',
+            'setter':'setBuyer'
+        },
+        '__asset':{
+            'type':Asset,
+            'getter':'getResult',
+            'setter':'setResult'
         },
         '__proposal':{
             'type':float,
@@ -171,15 +189,5 @@ class History(Entity):
             'type':str,
             'getter':'getResult',
             'setter':'setResult'
-        },
-        '__asset':{
-            'type':Asset,
-            'getter':'getResult',
-            'setter':'setResult'
-        },
-        '__buyer':{
-            'type':Buyer,
-            'getter':'getBuyer',
-            'setter':'setBuyer'
         }
     }
