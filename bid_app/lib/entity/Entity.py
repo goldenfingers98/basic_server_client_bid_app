@@ -4,6 +4,7 @@ import os
 from lib.repository.Repository import Repository
 from datetime import datetime
 
+
 class Entity:
     FILE = ''
     PATH = f'{sys.path[0]}{os.sep}public{os.sep}'+'{}'
@@ -25,9 +26,12 @@ class Entity:
                 else:
                     # Preparing the entity
                     attr_params = list(attr['type'].__slots__.values())
-                    obj = attr['type'](attr_params[0]['type'](item))
-                    # Synchronize the attribute
-                    Repository.repositoryMap[type(obj)].synchronize(obj)
+                    # Preparing the id
+                    id = attr_params[0]['type'](item)
+                    # obj = attr['type'](id)
+                    obj = Repository.repositoryMap[attr['type']].findById(id)
+                    # # Synchronize the attribute
+                    # Repository.repositoryMap[type(obj)].synchronize(obj)
                 # Pushing the attribute
                 attributes.append(obj)
             elif attr['type'] == datetime:
@@ -44,11 +48,12 @@ class Entity:
         params = list(cls.__slots__.values())
         # 
         for attr,arg in zip(params,args):
-            getattr(obj,attr['setter'])(arg)
+            setter=getattr(obj,attr['setter'])
+            setter(arg)
         return obj
 
     def update(self,obj):
         # Getting Class attributes params
         params = list(self.__slots__.values())
         for param in params:
-            getattr(obj,param['setter'])(getattr(obj,param['getter'])())
+            getattr(self,param['setter'])(getattr(obj,param['getter'])())

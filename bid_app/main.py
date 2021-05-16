@@ -1,6 +1,7 @@
 from lib.server.Server import Server
 # from src.models.models import *
 from src.repositories.repositories import *
+from time import sleep
 
 
 # def logMessage(message):
@@ -18,24 +19,18 @@ from src.repositories.repositories import *
 
 ###### test ######
 
-buyer = Buyer(0)
-buyer.setBillAmmount(5455)
-buyer1 = Buyer(1)
-buyer1.setBillAmmount(6665)
+# buyer = Buyer(0)
+# buyer.setBillAmmount(5455)
+# buyer1 = Buyer(1)
+# buyer1.setBillAmmount(6665)
 buyerRepository = BuyerRepository()
-buyerRepository.save(buyer)
-buyerRepository.save(buyer1)
+# buyerRepository.save(buyer)
+# buyerRepository.save(buyer1)
 
 assetRepository = AssetRepository()
-asset = Asset(150)
-assetRepository.save(asset)
+asset = assetRepository.findById(150)
 
 historyRepository = HistoryRepository()
-# historyRepository.save(History(proposal=200,asset=asset,buyer=buyer))
-# historyRepository.save(History(proposal=250,asset=asset,buyer=buyer1))
-# historyRepository.save(History(proposal=300,asset=asset,buyer=buyer))
-# historyRepository.save(History(proposal=450,asset=asset,buyer=buyer1))
-# historyRepository.save(History(proposal=600,asset=asset,buyer=buyer))
 
 l = historyRepository.findHistoriesByAsset(asset)
 pass

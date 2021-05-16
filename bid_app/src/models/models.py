@@ -122,7 +122,7 @@ class Asset(Entity):
 
 class History(Entity):
     FILE = "historique.txt"
-    HEADERS = ["Identificateur Acheteur","Proposition Valeur","Résultat"]
+    HEADERS = ["Identificateur Acheteur","Bien","Proposition Valeur","Résultat"]
     def __init__(self,proposal=0,result='echec',asset=None,buyer=None):
         super().__init__()
         self.__date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -158,8 +158,8 @@ class History(Entity):
     def setAsset(self,asset):
         self.__asset = asset
 
-    def setBuyer(self,nuyer):
-        self.__buyer = Buyer
+    def setBuyer(self,buyer):
+        self.__buyer = buyer
 
     def __str__(self):
         return f'{self.__date}\t{self.__buyer.getId()}\t{self.__asset.getRef()}\t{self.__proposal}\t{self.__result}\n'
@@ -177,8 +177,8 @@ class History(Entity):
         },
         '__asset':{
             'type':Asset,
-            'getter':'getResult',
-            'setter':'setResult'
+            'getter':'getAsset',
+            'setter':'setAsset'
         },
         '__proposal':{
             'type':float,

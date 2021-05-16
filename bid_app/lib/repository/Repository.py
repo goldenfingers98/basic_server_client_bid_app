@@ -67,6 +67,16 @@ class Repository:
                 file.close()
 
     @classmethod
+    def delete(cls,obj):
+        if(obj in cls.entities):# If the object exists already in the file
+            index = cls.entities.index(obj)
+            replace_line(cls.PATH,index+1,"")
+            cls.entities.pop(index)
+        else:
+            raise Repository.RepositoryException('Entity not found.')
+
+
+    @classmethod
     def synchronize(cls,obj):
         # Getting Class attributes params
         params = list(cls.CLASS.__slots__.values())
