@@ -9,6 +9,7 @@ def logMessage():
         "data":"Hello there",
         "status":200
     })
+    Server.broadcast("Hello everyone")
 
 def postTest(message):
     print(message)

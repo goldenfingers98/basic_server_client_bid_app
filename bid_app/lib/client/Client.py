@@ -7,16 +7,16 @@ from time import sleep
 
 class Client:
     __HAS_SESSION =False
+    __is_listening = False
     send_lock = Lock() # To synchronize the semaphore  Send_signal_sem
-    # recieve_lock = Lock() # To synchronize the semaphore Recieve_signal_sem
-    Send_signal_sem = Semaphore(0)
-    Recieve_signal_sem = Semaphore(0)
-    BroadCast_signal_sem = Semaphore(0)
+    Send_signal_sem = Semaphore(0) # To synchronize on connexion.send
+    Request_signal_sem = Semaphore(0) # To synchronize recievers on requests listening
+    BroadCast_signal_sem = Semaphore(0) # To synchronize recievers on broadcast msgs listening
     EMITTER = None
     RECIEVER = None
     request_to_send = None
     response_to_recieve = None
-    BroadCast_response = None
+    broadCast_msg_to_recieve = None
 
     @classmethod
     def openSession(cls,host,port):
@@ -40,7 +40,7 @@ class Client:
         try:
             cls.send_lock.acquire()
             cls.request_to_send = formatted_request
-            cls.Send_signal_sem.release() # Cretical ressource
+            cls.Send_signal_sem.release() # Critical ressource
         except Exception as err:
             pass
         # finally:
@@ -50,15 +50,14 @@ class Client:
     def __wait_for_response(cls):
         response = None
         try:
-            cls.Recieve_signal_sem.acquire()
+            cls.Request_signal_sem.acquire()
             response = cls.response_to_recieve
             return response
         except Exception as err:
             pass
 
-
     @classmethod
-    def __send_then(cls,request,callback,*args):
+    def __send_then(cls,request,callback):
         # Sending the response
         cls.__send(request)
         # Wait for response
@@ -80,23 +79,54 @@ class Client:
             thread.start()
 
     @classmethod
-    def post(cls,path,request_args,callback,*args):
+    def post(cls,path,callback,*args):
         # sleep(0.5)
         if Client.__HAS_SESSION:
             request = Client.__Request(
                 _type="POST",
                 path=path,
-                args=request_args
+                args=args
             )
         # Sending the response and executing callback
-        thread = Thread(target=cls.__send_then,args=[request,callback,args])
+        thread = Thread(target=cls.__send_then,args=[request,callback])
         thread.start()
 
     @classmethod
+    def set_listening_status(cls,isListening):
+        cls.__is_listening = isListening
+        if isListening:
+            thread = Thread(target=cls.__listen_the_broadcast_channel)
+            thread.start()
+        else:pass
+
+    @classmethod
+    def __listen_the_broadcast_channel(cls):
+        while Client.__HAS_SESSION and cls.__is_listening:
+            # Getting permission to read the ressource
+            cls.BroadCast_signal_sem.acquire()
+            if cls.__is_listening:
+                decoded_msg = cls.broadCast_msg_to_recieve # Critical ressource
+                print(decoded_msg)
+            else: # The Client isn't listening anymore
+                break
+
+    @classmethod
     def killSession(cls):
+        # Giving a rest
+        sleep(1)
+        # Killing the threads
         cls.EMITTER.stop()
         cls.RECIEVER.stop()
-        sys.exit()
+        # Killing the broadcast channel listener
+        # cls.__is_listening = False
+        # cls.BroadCast_signal_sem.release()
+        # Resetting the semaphores and locks
+        cls.send_lock = Lock() 
+        cls.Send_signal_sem = Semaphore(0)
+        cls.Request_signal_sem = Semaphore(0)
+        cls.BroadCast_signal_sem = Semaphore(0)
+        cls.__HAS_SESSION = False
+        
 
     class __Emitter(Thread):
         """
@@ -104,59 +134,79 @@ class Client:
         """
         def __init__(self,conn):
             Thread.__init__(self)
+            print("Sys>>>> initializing the emitter.")
             self.connexion = conn
             self.alive = True
 
         def run(self):
-            while self.alive:
+            print("Sys>>>> Emitter is on..")
+            while 1:
                 try:
+                    # Getting permission from Client class to send, ie, the appropiate message is ready
+                    # Or the Reciever is blocked and cannot exit
                     Client.Send_signal_sem.acquire()
-                    # sleep(0.5)
-                    self.connexion.send(Client.request_to_send)
-                    Client.send_lock.release()
+                    if self.alive: # Still alive and sending
+                        self.connexion.send(Client.request_to_send)
+                        # Release the next blocked emitter thread
+                        Client.send_lock.release()
+                    else: # Shutdown state
+                        print("Sys>>>> Emitter is shutdown")
+                        break
                 except Exception as err:
                     print("Sys>>>> Server is down!")
                     break
 
         def stop(self):
-            raise Exception("Quited")
+            # Releasing the thread before killing'em
+            Client.Send_signal_sem.release()
+            self.alive = False
+            # Closing the connexion even if the reciever is blocked on recieving
+            self.connexion.close()
+            print("Sys>>>> Client is shutdown.")
 
     class __Reciever(Thread):
         """
             Thread object that receives messages
         """
         def __init__(self,conn,emissionThread):
+            print("Sys>>>> initializing the reciever.")
             Thread.__init__(self)
             self.connexion = conn
             self.th_E = emissionThread
             self.alive = True
 
         def run(self):
-            while self.isAlive():
+            print("Sys>>>> Reciever is on..")
+            # Listening to the server
+            while self.alive:
                 received_message = ""
                 try:
-                    # sleep(0.5)
+                    # Recieve the bytes
                     received_message = self.connexion.recv(1024).decode("Utf8")
+                    # Formatting the recieved bytes
                     received_message = received_message.replace("'",'"')
-                    if received_message != '':
-                        response = loads(received_message)
-                        if response['status'] == 200:
-                            Client.response_to_recieve = response
-                            Client.Recieve_signal_sem.release()
-                        else:
-                            Client.BroadCast_response = response
-                            Client.BroadCast_signal_sem.release()
+                    assert received_message != ''
+                    # Loading the json format
+                    response = loads(received_message)
+                    # If the recieved message is a response, ie code 200
+                    if response['status'] == 200: 
+                        Client.response_to_recieve = response
+                        # Releasing the next thread who is expecting a response
+                        Client.Request_signal_sem.release()
+                    else: # The recieved message is a broadcast
+                        Client.broadCast_msg_to_recieve = response
+                        # Releasing the next thread who is expecting a broadcast message
+                        Client.BroadCast_signal_sem.release()
                 except Exception as err:
                     break
-                print(f"{received_message}")
                 if received_message.upper() == "END":
                     break
             self.th_E.stop()
-            print("\n>>>> Client is stoped. Interrupted connexion")
+            print("Sys>>>> Reciever is shutdown")
             self.connexion.close()
 
         def stop(self):
-            raise Exception("Quited")
+            self.alive = False
 
     class __Request(dict):
         def __init__(self,_type,path,args):
