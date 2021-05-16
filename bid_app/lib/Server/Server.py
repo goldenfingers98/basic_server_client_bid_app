@@ -53,12 +53,17 @@ class Server:
                 client.start()
                 # print(f">>>> {str(client)}")
                 connexion.send(
-                    "SERVER >>>>: You are connected. Ready to listen...".encode('Utf8'))
+                    '{"status":300,"message":"SERVER >>>>: You are connected. Ready to listen..."}'.encode('Utf8'))
 
     @staticmethod
     def send(message):
         assert type(message) == type(dict())
         Server.CURRENT_CONNEXION.send(json.dumps(message).encode())
+
+    @staticmethod
+    def broadcast(message):
+         for key in Server.CLIENT_POOL:
+            Server.CLIENT_POOL[key].send(message.encode('Utf8'))
 
     class __Client(Thread):
         """
@@ -81,7 +86,11 @@ class Server:
                 raise Exception("Unsupported format")
 
         def __sendERROR(self, message):
-            self.connexion.send(f'SERVER error >>>> {message}'.encode())
+            message = message.strip("'").strip('"')
+            error = f"SERVER error >>>>{message}"
+            serialized_error = {"status":500,"data":error,}
+            error = json.dumps(serialized_error)
+            self.connexion.send(error.encode())
 
         def __send(self, message):
             assert type(message) == type(dict())
@@ -105,18 +114,30 @@ class Server:
                         if request["path"] in Server.GET_PATTERNS:
                             args = request["args"]
                             # Sending response setting
-                            self.settingResponse()
-                            # Executing callable
-                            Server.GET_PATTERNS[request["path"]](*args)
+                            try:
+                                Server.MUTEX.acquire()
+                                Server.CURRENT_CONNEXION = self.connexion  # Cretical ressource
+                                # Executing callable
+                                Server.GET_PATTERNS[request["path"]]()
+                            except Exception as err:
+                                self.__sendERROR(str(err))
+                            finally:
+                                Server.MUTEX.release()
                         else:
                             self.__sendERROR("path not defined.")
                     elif request["type"] == "POST":
                         if request["path"] in Server.POST_PATTERNS:
-                            args = request["args"]
+                            args = tuple(request["args"])
                             # Sending response setting
-                            self.settingResponse()
-                            # Executing callable
-                            Server.GET_PATTERNS[request["path"]](*args)
+                            try:
+                                Server.MUTEX.acquire()
+                                Server.CURRENT_CONNEXION = self.connexion  # Cretical ressource
+                                # Executing callable
+                                Server.POST_PATTERNS[request["path"]](*args)
+                            except Exception as err:
+                                self.__sendERROR(str(err))
+                            finally:
+                                Server.MUTEX.release()
                         else:
                             self.__sendERROR("path not defined.")
                     else:
@@ -126,13 +147,6 @@ class Server:
                     break
                 if not request or request['type'] == "EXIT":
                     break
-
-                # message = f"{name} >>>> {request}"
-                # print(message)
-                # #Broadcast the message to the others
-                # for key in Server.CLIENT_POOL:
-                #     if key != name:
-                #         Server.CLIENT_POOL[key].send(message.encode('Utf8'))
 
             # Closing the connexion
             try:
