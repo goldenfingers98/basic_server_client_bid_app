@@ -106,7 +106,7 @@ class Client:
             cls.BroadCast_signal_sem.acquire()
             if cls.__is_listening:
                 decoded_msg = cls.broadCast_msg_to_recieve # Critical ressource
-                print(decoded_msg)
+                print(decoded_msg['message'])
             else: # The Client isn't listening anymore
                 break
 
@@ -118,14 +118,15 @@ class Client:
         cls.EMITTER.stop()
         cls.RECIEVER.stop()
         # Killing the broadcast channel listener
-        # cls.__is_listening = False
-        # cls.BroadCast_signal_sem.release()
+        cls.__is_listening = False
+        cls.BroadCast_signal_sem.release()
         # Resetting the semaphores and locks
         cls.send_lock = Lock() 
         cls.Send_signal_sem = Semaphore(0)
         cls.Request_signal_sem = Semaphore(0)
         cls.BroadCast_signal_sem = Semaphore(0)
         cls.__HAS_SESSION = False
+        print("Sys>>>> Client is shutdown.")
         
 
     class __Emitter(Thread):
@@ -147,6 +148,8 @@ class Client:
                     Client.Send_signal_sem.acquire()
                     if self.alive: # Still alive and sending
                         self.connexion.send(Client.request_to_send)
+                        # Take a rest
+                        sleep(0.5)
                         # Release the next blocked emitter thread
                         Client.send_lock.release()
                     else: # Shutdown state
@@ -162,7 +165,6 @@ class Client:
             self.alive = False
             # Closing the connexion even if the reciever is blocked on recieving
             self.connexion.shutdown(socket.SHUT_RDWR)
-            print("Sys>>>> Client is shutdown.")
 
     class __Reciever(Thread):
         """
@@ -202,6 +204,7 @@ class Client:
                 if received_message.upper() == "END":
                     break
             self.th_E.stop()
+            self.stop()
             print("Sys>>>> Reciever is shutdown")
             self.connexion.shutdown(socket.SHUT_RDWR)
 

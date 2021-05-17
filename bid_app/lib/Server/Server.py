@@ -91,7 +91,7 @@ class Server:
         def __sendERROR(self, message):
             message = message.strip("'").strip('"')
             error = f"SERVER error >>>>{message}"
-            serialized_error = {"status":500,"data":error,}
+            serialized_error = {"status":500,"message":error,}
             error = json.dumps(serialized_error)
             self.connexion.send(error.encode())
 
