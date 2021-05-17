@@ -1,6 +1,7 @@
 from tempfile import mkstemp
 from shutil import move, copymode
 from os import fdopen, remove
+from threading import Lock
 
 def replace_line(file_path, index, subst):
     """
@@ -30,6 +31,7 @@ class Repository:
     PATH = ''
     HEADERS = ''
     entities = []
+    __Lock = Lock()
     CLASS = None
     repositoryMap = {}
 
@@ -40,6 +42,8 @@ class Repository:
         Repository.repositoryMap[type(self).CLASS] = self
         file = None
         try:
+            # Getting permission
+            type(self).__Lock.acquire()
             file = open(type(self).PATH,'r')
             type(self).entities = [type(self).CLASS.serialize(item.strip('\n')) for item in file.readlines()[1:]]
             type(self).entities.append(None)
@@ -50,9 +54,11 @@ class Repository:
             file.write(type(self).HEADERS)
         finally:
             file.close()
+            type(self).__Lock.release() # Release the critical ressource        
 
     @classmethod
     def save(cls,obj):
+        cls.__Lock.acquire() # Getting permission
         if(obj in cls.entities): # If the object exists already in the file
             index = cls.entities.index(obj)+1
             replace_line(cls.PATH,index,str(obj))
@@ -65,27 +71,18 @@ class Repository:
                 file.write(str(obj))
                 cls.entities.append(obj)
                 file.close()
+        cls.__Lock.release() # Release the critical ressource   
 
     @classmethod
     def delete(cls,obj):
         if(obj in cls.entities):# If the object exists already in the file
+            cls.__Lock.acquire() # Getting permission
             index = cls.entities.index(obj)
             replace_line(cls.PATH,index+1,"")
             cls.entities.pop(index)
+            cls.__Lock.release() # Release the critical ressource  
         else:
             raise Repository.RepositoryException('Entity not found.')
-
-
-    @classmethod
-    def synchronize(cls,obj):
-        # Getting Class attributes params
-        params = list(cls.CLASS.__slots__.values())
-        try:
-            temp = cls.findById(getattr(obj,params[0]['getter'])())
-            obj.update(temp)
-            
-        except Exception as err:
-            raise Repository.RepositoryException(f"Cannot synchronize.\nReason : {err}")
 
     @classmethod
     def findById(cls,id):

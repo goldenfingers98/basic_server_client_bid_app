@@ -28,10 +28,7 @@ class Entity:
                     attr_params = list(attr['type'].__slots__.values())
                     # Preparing the id
                     id = attr_params[0]['type'](item)
-                    # obj = attr['type'](id)
                     obj = Repository.repositoryMap[attr['type']].findById(id)
-                    # # Synchronize the attribute
-                    # Repository.repositoryMap[type(obj)].synchronize(obj)
                 # Pushing the attribute
                 attributes.append(obj)
             elif attr['type'] == datetime:
