@@ -4,9 +4,15 @@ from lib.client.Client import Client
 
 class BiddingRoom(QDialog,Ui_BiddingRoom):
 
-    def __init__(self):
+    def __init__(self,asset):
         QDialog.__init__(self)
         self.setupUi(self)
+        # Setting the asset informations
+        self.assetId.setText(str(asset['_Asset__ref']))
+        self.assetStartingFrom.setText(str(asset['_Asset__starting_price']))
+        self.AssetCurrentPrice.setText(str(asset['_Asset__last_price']))
+        self.lastBidder.setText(str(asset['_Asset__buyer']))
+        self.proposalValue.setMinimum(asset['_Asset__last_price'])
         # 
         self.__connct_signals_to_slots()
 
@@ -14,4 +20,4 @@ class BiddingRoom(QDialog,Ui_BiddingRoom):
         self.bidBtn.clicked.connect(self.postBid)
 
     def postBid(self):
-        Client.get("/hello",print)
+        Client.post("/asset/bid",[self.proposalValue.value()]).then(print)

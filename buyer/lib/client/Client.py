@@ -100,7 +100,7 @@ class Client:
             print("Sys>>>> Connot get, server is shutdown")
 
     @classmethod
-    def post(cls,path,callback,*args):
+    def post(cls,path,*args):
         # sleep(0.5)
         if Client.__HAS_SESSION:
             request = Client.__Request(
@@ -181,7 +181,7 @@ class Client:
         def stop(self):
             # Releasing the thread before killing'em
             self.alive = False
-            Client.send_lock._value = 10000
+            # Client.send_lock._value = 10000
             Client.Send_signal_sem.release()
             # Closing the connexion even if the reciever is blocked on recieving
             self.connexion.shutdown(socket.SHUT_RDWR)
@@ -229,8 +229,8 @@ class Client:
             self.connexion.shutdown(socket.SHUT_RDWR)
 
         def stop(self):
-            Client.Request_signal_sem._value = 10000
-            Client.BroadCast_signal_sem._value = 10000
+            # Client.Request_signal_sem._value = 10000
+            # Client.BroadCast_signal_sem._value = 10000
             self.alive = False
 
     class __Request(dict):

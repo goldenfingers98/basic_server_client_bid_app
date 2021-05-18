@@ -28,10 +28,9 @@ class BidderView(QMainWindow, Ui_BidderView):
         if len(res['data']) == 0:
             QtWidgets.QMessageBox.information(self,"Bidding Room","No assets to buy, try later.")
         else:
-            # TODO Treatment 
-            biddingWindow = BiddingRoom()
+            asset = res['data'][0]
+            biddingWindow = BiddingRoom(asset)
             self.setDisabled(True)
             biddingWindow.show()
             biddingWindow.exec_()
             self.setDisabled(False)
-            pass
