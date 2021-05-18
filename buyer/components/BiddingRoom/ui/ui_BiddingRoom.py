@@ -212,7 +212,7 @@ class Ui_BiddingRoom(object):
         self.lastProposal.setText(QCoreApplication.translate("BiddingRoom", u"0", None))
         self.label_2.setText(QCoreApplication.translate("BiddingRoom", u"Proposal", None))
         self.label.setText(QCoreApplication.translate("BiddingRoom", u"Time remaininig:", None))
-        self.timeInput.setText(QCoreApplication.translate("BiddingRoom", u"30s", None))
+        self.timeInput.setText(QCoreApplication.translate("BiddingRoom", u"30 s", None))
         self.bidBtn.setText(QCoreApplication.translate("BiddingRoom", u"Bid !", None))
     # retranslateUi
 

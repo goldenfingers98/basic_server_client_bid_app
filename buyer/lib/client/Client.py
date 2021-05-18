@@ -23,7 +23,7 @@ class Client:
     @classmethod
     def initialize(cls):
         # Resetting the semaphores and locks
-        cls.send_lock = Semaphore(1) 
+        cls.send_lock = Semaphore(1) # cls.send_lock = ie Lock()
         cls.Send_signal_sem = Semaphore(0)
         cls.Request_signal_sem = Semaphore(0)
         cls.BroadCast_signal_sem = Semaphore(0)
@@ -76,7 +76,7 @@ class Client:
     def __send_then(cls,request):
         # Sending the response
         cls.__send(request)
-        print("Sys>>>> request sent")
+        print("Sys>>>> request sent : ",request)
         # Wait for response
         var = cls.__wait_for_response()
         print("Sys>>>> response : ",var)
@@ -118,19 +118,22 @@ class Client:
     def set_listening_status(cls,isListening):
         cls.__is_listening = isListening
         if isListening:
-            thread = Thread(target=cls.__listen_the_broadcast_channel,name=f"listener {cls.number}")
+            thread = cls.__Response(callable=cls.__listen_the_broadcast_channel,name=f"listener {cls.number}")
             cls.number += 1
             thread.start()
+            return thread
         else:pass
 
     @classmethod
     def __listen_the_broadcast_channel(cls):
         while Client.__HAS_SESSION and cls.__is_listening:
+            sleep(0.2)
             # Getting permission to read the ressource
             cls.BroadCast_signal_sem.acquire()
             if cls.__is_listening:
                 decoded_msg = cls.broadCast_msg_to_recieve # Critical ressource
-                print(decoded_msg['data'])
+                cls.__Response.stream = decoded_msg['data']
+                cls.__Response.streamLock.release()
             else: # The Client isn't listening anymore
                 break
 
@@ -215,8 +218,9 @@ class Client:
                         Client.response_to_recieve = response
                         # Releasing the next thread who is expecting a response
                         Client.Request_signal_sem.release()
-                    else: # The recieved message is a broadcast
+                    elif response['status'] == 255: # The recieved message is a broadcast
                         Client.broadCast_msg_to_recieve = response
+                        print('Broadcast msg : ',response)
                         # Releasing the next thread who is expecting a broadcast message
                         Client.BroadCast_signal_sem.release()
                 except Exception as err:
@@ -247,13 +251,19 @@ class Client:
     #         self['data'] = data
 
     class __Response(Thread):
-        def __init__(self,callable,args,name=None):
+        stream = None
+        streamLock = Semaphore(0)
+        def __init__(self,callable,args=None,name=None):
             Thread.__init__(self,name=name,args=args)
             self.callable = callable
             self.response = None
 
         def run(self):
-            self.response = self.callable(*self._args)
+            if self._args is None:
+                self.response = self.callable()
+            else:
+                self.response = self.callable(*self._args)
+            
 
         def then(self,callback):
             self.join()

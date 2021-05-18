@@ -25,11 +25,14 @@ class BidderView(QMainWindow, Ui_BidderView):
     # Callbacks here
 
     def __openBiddingRoomCallback(self,res):
-        if len(res['data']) == 0:
+        if res['data'] is None:
+            QtWidgets.QMessageBox.information(self,"Bidding Room","No assets to buy, try later.")
+        elif len(res['data']) == 0:
             QtWidgets.QMessageBox.information(self,"Bidding Room","No assets to buy, try later.")
         else:
-            asset = res['data'][0]
-            biddingWindow = BiddingRoom(asset)
+            asset = res['data']['asset']
+            current_time = res['data']['current_time']
+            biddingWindow = BiddingRoom(asset,current_time)
             self.setDisabled(True)
             biddingWindow.show()
             biddingWindow.exec_()

@@ -1,6 +1,5 @@
 from PySide2.QtWidgets import QApplication
 from components.BidderView.BidderView import BidderView
-from components.BiddingRoom.BiddingRoom import BiddingRoom
 import sys
 from dotenv import dotenv_values
 from lib.client.Client import Client
