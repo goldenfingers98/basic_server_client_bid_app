@@ -1,6 +1,9 @@
-from PySide2.QtWidgets import  QMainWindow
+import threading
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import  QMainWindow, QMessageBox, QWidget
 from .ui.ui_BidderView import Ui_BidderView
 from components.BiddingRoom.BiddingRoom import BiddingRoom
+from lib.client.Client import Client
 
 class BidderView(QMainWindow, Ui_BidderView):
 
@@ -9,7 +12,6 @@ class BidderView(QMainWindow, Ui_BidderView):
         self.setupUi(self)
         # Connecting signals to slots
         self.__connect_signals_to_slots()
-
         #########################
         self.show()
 
@@ -18,8 +20,18 @@ class BidderView(QMainWindow, Ui_BidderView):
         self.biddingRoomBtn.clicked.connect(self.__openBiddingRoom)
 
     def __openBiddingRoom(self):
-        biddingWindow = BiddingRoom()
-        self.setDisabled(True)
-        biddingWindow.show()
-        biddingWindow.exec_()
-        self.setDisabled(False)
+        Client.get("/assets/available").then(self.__openBiddingRoomCallback)
+
+    # Callbacks here
+
+    def __openBiddingRoomCallback(self,res):
+        if len(res['data']) == 0:
+            QtWidgets.QMessageBox.information(self,"Bidding Room","No assets to buy, try later.")
+        else:
+            # TODO Treatment 
+            biddingWindow = BiddingRoom()
+            self.setDisabled(True)
+            biddingWindow.show()
+            biddingWindow.exec_()
+            self.setDisabled(False)
+            pass

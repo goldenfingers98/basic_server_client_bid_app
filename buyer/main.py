@@ -10,10 +10,13 @@ from lib.client.Client import Client
 CONFIG = dotenv_values('./.env')
 HOST =  CONFIG["HOST"]
 PORT = int(CONFIG["PORT"])
-# Open a session
-Client.openSession(HOST,PORT)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    # Open a session
+    Client.openSession(HOST,PORT)
+    # Start the application
     mainWindow = BidderView()
-    sys.exit(app.exec_())
+    app.exec_()
+    # Quit the session
+    Client.killSession()

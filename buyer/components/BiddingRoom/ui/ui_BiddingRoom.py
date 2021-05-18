@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'BiddingRoommVeLuW.ui'
+## Form generated from reading UI file 'BiddingRoomyZkGxe.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.1
 ##
@@ -175,13 +175,13 @@ class Ui_BiddingRoom(object):
 
         self.gridLayout_2.addWidget(self.timeInput, 0, 1, 1, 1)
 
-        self.pushButton = QPushButton(BiddingRoom)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setMinimumSize(QSize(0, 40))
-        self.pushButton.setMaximumSize(QSize(100, 16777215))
-        self.pushButton.setFont(font1)
+        self.bidBtn = QPushButton(BiddingRoom)
+        self.bidBtn.setObjectName(u"bidBtn")
+        self.bidBtn.setMinimumSize(QSize(0, 40))
+        self.bidBtn.setMaximumSize(QSize(100, 16777215))
+        self.bidBtn.setFont(font1)
 
-        self.gridLayout_2.addWidget(self.pushButton, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.bidBtn, 1, 2, 1, 1)
 
 
         self.gridLayout_3.addLayout(self.gridLayout_2, 2, 1, 1, 1)
@@ -213,6 +213,6 @@ class Ui_BiddingRoom(object):
         self.label_2.setText(QCoreApplication.translate("BiddingRoom", u"Proposal", None))
         self.label.setText(QCoreApplication.translate("BiddingRoom", u"Time remaininig:", None))
         self.timeInput.setText(QCoreApplication.translate("BiddingRoom", u"30s", None))
-        self.pushButton.setText(QCoreApplication.translate("BiddingRoom", u"Bid !", None))
+        self.bidBtn.setText(QCoreApplication.translate("BiddingRoom", u"Bid !", None))
     # retranslateUi
 
