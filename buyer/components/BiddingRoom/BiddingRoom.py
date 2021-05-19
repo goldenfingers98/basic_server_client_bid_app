@@ -4,6 +4,7 @@ from .ui.ui_BiddingRoom import Ui_BiddingRoom
 from lib.client.Client import Client
 import threading
 from dotenv import dotenv_values
+from PySide2.QtGui import QCloseEvent
 
 
 CONFIG = dotenv_values('./.env')
@@ -93,3 +94,11 @@ class BiddingRoom(QDialog,Ui_BiddingRoom):
 
     def __enableBitBtn(self,res):
         self.bidBtn.setEnabled(True)
+    
+    def closeEvent(self, arg__1: QCloseEvent) -> None:
+        self.__listener_flag = False
+        Client.set_listening_status(False)
+        self.__listener.streamLock.release()
+        return super().closeEvent(arg__1)
+
+    
