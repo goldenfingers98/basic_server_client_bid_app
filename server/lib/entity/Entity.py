@@ -18,14 +18,14 @@ class Entity:
         """
         attributes = []
         # Getting the class attributes params
-        params = list(cls.__slots__.values())
+        params = list(cls.__slot__.values())
         for item,attr in zip(string.split('\t'),params):
             if issubclass(attr['type'],Entity): # That means if the attribute is an Entity
                 if item == 'None':
                     obj = None
                 else:
                     # Preparing the entity
-                    attr_params = list(attr['type'].__slots__.values())
+                    attr_params = list(attr['type'].__slot__.values())
                     # Preparing the id
                     id = attr_params[0]['type'](item)
                     obj = Repository.repositoryMap[attr['type']].findById(id)
@@ -42,7 +42,7 @@ class Entity:
     def __constructor(cls,*args):
         obj = cls()
         # Getting the class attributes params
-        params = list(cls.__slots__.values())
+        params = list(cls.__slot__.values())
         # 
         for attr,arg in zip(params,args):
             setter=getattr(obj,attr['setter'])
@@ -51,6 +51,6 @@ class Entity:
 
     def update(self,obj):
         # Getting Class attributes params
-        params = list(self.__slots__.values())
+        params = list(self.__slot__.values())
         for param in params:
             getattr(self,param['setter'])(getattr(obj,param['getter'])())

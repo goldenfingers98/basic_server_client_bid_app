@@ -46,7 +46,7 @@ class Repository:
             type(self).__Lock.acquire()
             file = open(type(self).PATH,'r')
             type(self).entities = [type(self).CLASS.serialize(item.strip('\n')) for item in file.readlines()[1:]]
-            type(self).entities.append(None)
+            # type(self).entities.append(None)
         except Repository.RepositoryException as err:
             raise err
         except Exception as err:
@@ -87,7 +87,7 @@ class Repository:
     @classmethod
     def findById(cls,id):
         # Getting Class attributes params
-        params = list(cls.CLASS.__slots__.values())
+        params = list(cls.CLASS.__slot__.values())
         # Seeking the item
         for item in cls.entities:
             if item != None:

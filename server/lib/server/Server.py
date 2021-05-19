@@ -5,7 +5,17 @@ import os
 from threading import Thread,Lock
 from time import sleep
 import json
+import datetime
 
+class customEncoder(json.JSONEncoder):
+    def default(self, o):
+            return o.__dict__
+
+def json_default(value):
+    if isinstance(value, datetime.date):
+        return dict(year=value.year, month=value.month, day=value.day)
+    else:
+        return value.__dict__
 
 class Server:
     HOST = ''
@@ -52,8 +62,8 @@ class Server:
                 Server.CLIENT_POOL[client.getName()] = connexion
                 client.start()
                 # print(f">>>> {str(client)}")
-                connexion.send(
-                    '{"status":300,"message":"SERVER >>>>: You are connected. Ready to listen..."}'.encode('Utf8'))
+                # connexion.send(
+                #     '{"status":300,"data":"SERVER >>>>: You are connected. Ready to listen..."}'.encode('Utf8'))
 
     @staticmethod
     def send(message):
@@ -62,11 +72,12 @@ class Server:
 
     @staticmethod
     def broadcast(message):
-        message = message.strip("'").strip('"')
-        serialized_msg = {'message':message,'status':255}
-        message = json.dumps(serialized_msg)
+        # message = message.strip("'").strip('"')
+        message = {"data":message,"status":255}
+        message = json.dumps(obj=message,cls=customEncoder,default=json_default) # (serialized_msg)
         for key in Server.CLIENT_POOL:
            Server.CLIENT_POOL[key].send(message.encode('Utf8'))
+        print("BoadCast sent : ",message)
 
     class __Client(Thread):
         """
@@ -91,13 +102,14 @@ class Server:
         def __sendERROR(self, message):
             message = message.strip("'").strip('"')
             error = f"SERVER error >>>>{message}"
-            serialized_error = {"status":500,"message":error,}
+            serialized_error = {"status":500,"data":error,}
             error = json.dumps(serialized_error)
             self.connexion.send(error.encode())
 
         def __send(self, message):
-            assert type(message) == type(dict())
-            self.connexion.send(json.dumps(message).encode())
+            # assert type(message) == type(dict())
+            message = {"status":200,"data":message}
+            self.connexion.send(json.dumps(obj=message,cls=customEncoder,default=json_default).encode())
 
         def settingResponse(self):
             # Synchronization
@@ -121,7 +133,8 @@ class Server:
                                 Server.MUTEX.acquire()
                                 Server.CURRENT_CONNEXION = self.connexion  # Cretical ressource
                                 # Executing callable
-                                Server.GET_PATTERNS[request["path"]]()
+                                res = Server.GET_PATTERNS[request["path"]]()
+                                self.__send(res)
                             except Exception as err:
                                 self.__sendERROR(str(err))
                             finally:
@@ -130,13 +143,14 @@ class Server:
                             self.__sendERROR("path not defined.")
                     elif request["type"] == "POST":
                         if request["path"] in Server.POST_PATTERNS:
-                            args = tuple(request["args"])
+                            args = request["args"]
                             # Sending response setting
                             try:
                                 Server.MUTEX.acquire()
                                 Server.CURRENT_CONNEXION = self.connexion  # Cretical ressource
                                 # Executing callable
-                                Server.POST_PATTERNS[request["path"]](*args)
+                                res = Server.POST_PATTERNS[request["path"]](*args)
+                                self.__send(res)
                             except Exception as err:
                                 self.__sendERROR(str(err))
                             finally:

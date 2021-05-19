@@ -1,3 +1,4 @@
+from sys import set_asyncgen_hooks
 from lib.repository.Repository import Repository
 from src.models.models import *
 
@@ -6,6 +7,10 @@ class BuyerRepository(Repository):
 
 class AssetRepository(Repository):
     CLASS = Asset
+
+    @staticmethod
+    def findAssetsByState(state):
+        return [asset for asset in AssetRepository.entities if asset.getState().upper() == state.upper()]
 
 class HistoryRepository(Repository):
     CLASS = History

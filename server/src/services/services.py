@@ -62,10 +62,14 @@ class AssetService:
         return cls.__assetRepository.entities
 
     @classmethod
+    def getAssetsByState(cls,state):
+        return cls.__assetRepository.findAssetsByState(state)
+
+    @classmethod
     def updateAsset(cls,asset):
         # Retrieving the asset
         try:
-            temp = cls.__assetRepository.findById(asset.getId())
+            temp = cls.__assetRepository.findById(asset.getRef())
             temp.update(asset)
             cls.__assetRepository.save(temp)
         except Exception as err:
@@ -96,13 +100,13 @@ class HistoryService:
 
     @classmethod
     def getHistoryByAsset(cls,asset):
-        return cls.__historyRepository.findHistoriesByAsset()
+        return cls.__historyRepository.findHistoriesByAsset(asset)
 
     @classmethod
-    def updatehistory(cls,history):
+    def updateHistory(cls,history):
         # Retrieving the history
         try:
-            temp = cls.__historyRepository.findById(history.getId())
+            temp = cls.__historyRepository.findById(history.getDate())
             temp.update(history)
             cls.__historyRepository.save(temp)
         except Exception as err:

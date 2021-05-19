@@ -25,14 +25,14 @@ class Buyer(Entity):
     def __str__(self):
         return f'{self.__id}\t{self.__bill_ammount}\n'
 
-    __slots__ = {
+    __slot__ = {
         '__id':{
             'type':int,
             'getter':'getId',
             'setter':'setId'
         },
         '__bill_ammount':{
-            'type':int,
+            'type':float,
             'getter':'getBillAmmount',
             'setter':'setBillAmmount'
         },
@@ -85,9 +85,11 @@ class Asset(Entity):
         self.__buyer = buyer
 
     def __str__(self):
-        return f'{self.__ref}\t{self.__starting_price}\t{self.__last_price}\t{self.__state}\t{self.__buyer}\n'
+        if self.__buyer is None:
+            return f'{self.__ref}\t{self.__starting_price}\t{self.__last_price}\t{self.__state}\t{self.__buyer}\n'
+        return f'{self.__ref}\t{self.__starting_price}\t{self.__last_price}\t{self.__state}\t{self.__buyer.getId()}\n'
 
-    __slots__ = {
+    __slot__ = {
         '__ref':{
             'type':int,
             'getter':'getRef',
@@ -164,7 +166,7 @@ class History(Entity):
     def __str__(self):
         return f'{self.__date}\t{self.__buyer.getId()}\t{self.__asset.getRef()}\t{self.__proposal}\t{self.__result}\n'
 
-    __slots__ = {
+    __slot__ = {
         '__date':{
             'type':datetime,
             'getter':'getDate',
