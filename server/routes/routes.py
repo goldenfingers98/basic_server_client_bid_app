@@ -15,7 +15,7 @@ def chrono_decrementor():
         if time == 0: # Bidding is finished ----- Critical ressource
             lock.release()
             temp = AssetController.checkAvailableAssets()
-            if (len(temp) == 1): # Check if the asset exists
+            if (len(temp) != 0): # Check if the asset exists
                 asset = temp[0] # Getting the concerned asset
                 try:
                     history = HistoryController.getLastHistoryByAsset(asset) # Getting last bid history of the concerned asset
@@ -48,8 +48,8 @@ def checkAssetToBuy():
     lock.acquire()
     temp =  AssetController.checkAvailableAssets()
     response = None
-    if (len(temp) == 1):
-        response = {'asset':temp[0],'current_time':time}
+    if (len(temp) > 0 ):
+        response = {'asset':temp[0],'current_time':time} # Critical ressource
         try:
             if not chrono.is_alive():
                 chrono.start()
@@ -65,7 +65,7 @@ def bid(request):
     global time
     # Changing the asset last price
     temp =  AssetController.checkAvailableAssets()
-    if (len(temp) == 1): # Check if the asset exists
+    if (len(temp) != 0): # Check if the asset exists
         asset = temp[0]
         asset.setLastPrice(request['proposition']) # Changing asset last price
         buyer = BuyerController.getBuyerById(request['buyer_id'])
@@ -130,3 +130,13 @@ def addBuyer(request):
     )
     BuyerController.add(buyer)
     return buyer
+
+
+def getHistories():
+    return HistoryController.getAll()
+
+def getHistoriyByAsset(request):
+    if AssetController.exists(request['id']):
+        asset = AssetController.getAssetByRef(request['id'])
+        return HistoryController.getHistoriesByAsset(asset)
+    raise Exception("Cannot find asset.\nAsset doesn't exist")

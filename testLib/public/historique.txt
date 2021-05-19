@@ -1,6 +1,0 @@
-Identificateur Acheteur	Bien	Proposition Valeur	R�sultat
-2021-05-16 13:21:04	0	150	200	echec
-2021-05-16 13:21:04	1	150	250	echec
-2021-05-16 13:21:04	0	150	300	echec
-2021-05-16 13:21:04	1	150	450	echec
-2021-05-16 13:21:04	0	150	600	echec

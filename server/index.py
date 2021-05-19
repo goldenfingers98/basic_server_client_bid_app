@@ -11,16 +11,16 @@ if __name__ == '__main__':
 
     Server.post(path="/asset/bid",callable=bid)
     Server.get(path="/assets/available",callable=checkAssetToBuy)
+    Server.get(path="/asset/all",callable=getAssets)
+    Server.post(path='/asset/add',callable=addAsset)
+    Server.post('/asset/ref',callable=getAsset)
 
     Server.post(path="/buyer/data",callable=buyerData)
     Server.post(path="/buyer/pay",callable=pay)
     Server.post(path="/buyer/add",callable=addBuyer)
     Server.get(path='/buyer/all',callable=getBuyers)
 
-    Server.get(path="/asset/all",callable=getAssets)
-    Server.post(path='/asset/add',callable=addAsset)
-    Server.post('/asset/ref',callable=getAsset)
-
-
+    Server.get(path='/history/all',callable=getHistories)
+    Server.post(path='/history/asset',callable=getHistoriyByAsset)
 
     Server.run_application() 

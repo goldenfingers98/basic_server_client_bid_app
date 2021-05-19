@@ -1,3 +1,0 @@
-Identificateur Acheteur	Somme à payer
-1	0
-2	0

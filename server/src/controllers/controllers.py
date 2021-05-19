@@ -45,7 +45,11 @@ class HistoryController:
     def updateHistory(cls,history):
         cls.__historyService.updateHistory(history)
 
+    @classmethod
+    def getAll(cls):
+        return cls.__historyService.getHistories()
 
+   
 
 class AssetController:
     __assetService = AssetService()

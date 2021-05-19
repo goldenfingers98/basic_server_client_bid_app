@@ -13,7 +13,7 @@ class customEncoder(json.JSONEncoder):
 
 def json_default(value):
     if isinstance(value, datetime.date):
-        return dict(year=value.year, month=value.month, day=value.day)
+        return dict(year=value.year, month=value.month, day=value.day, time=value.strftime("%H:%M:%S"))
     else:
         return value.__dict__
 

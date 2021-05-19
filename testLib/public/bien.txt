@@ -1,2 +1,0 @@
-R�f�rence Objet	Prix D�part	Dernier Prix	Etat	Acheteur
-150	0	0	Vendu	1	6665

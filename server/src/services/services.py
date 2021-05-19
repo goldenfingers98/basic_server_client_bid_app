@@ -106,7 +106,7 @@ class HistoryService:
             cls.__fileLock.release()
 
     @classmethod
-    def getHistorys(cls):
+    def getHistories(cls):
         return cls.__historyRepository.entities
 
     @classmethod
@@ -123,3 +123,5 @@ class HistoryService:
         except Exception as err:
             # history doesn't exist
             pass
+
+   
