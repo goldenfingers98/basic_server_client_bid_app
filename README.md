@@ -15,3 +15,7 @@ resquirements.txt includes pyside2 for the graphical user interface and python-d
 The code of this project belongs to Khaldoun CHTOUROU
 
 Note that this project is for educational purpose, and it is NOT for production.
+
+# Repository git
+
+https://github.com/goldenfingers98/basic_server_client_bid_app/
