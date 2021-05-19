@@ -10,7 +10,7 @@ class Client:
     __is_listening = False
     send_lock = None # To synchronize the semaphore  Send_signal_sem
     Send_signal_sem = None # To synchronize on connexion.send
-    Request_signal_sem = None # To synchronize recievers on requests listening
+    Response_signal_sem = None # To synchronize recievers on requests listening
     BroadCast_signal_sem = None # To synchronize recievers on broadcast msgs listening
     EMITTER = None
     RECIEVER = None
@@ -25,7 +25,7 @@ class Client:
         # Resetting the semaphores and locks
         cls.send_lock = Semaphore(1) # cls.send_lock = ie Lock()
         cls.Send_signal_sem = Semaphore(0)
-        cls.Request_signal_sem = Semaphore(0)
+        cls.Response_signal_sem = Semaphore(0)
         cls.BroadCast_signal_sem = Semaphore(0)
         cls.__HAS_SESSION = False
 
@@ -64,7 +64,7 @@ class Client:
     def __wait_for_response(cls):
         response = None
         try:
-            cls.Request_signal_sem.acquire()
+            cls.Response_signal_sem.acquire()
             # print("RECIEVER : ",cls.RECIEVER.alive)
             if cls.RECIEVER.alive:
                 response = cls.response_to_recieve
@@ -213,16 +213,16 @@ class Client:
                     assert received_message != ''
                     # Loading the json format
                     response = loads(received_message)
-                    # If the recieved message is a response, ie code 200
-                    if response['status'] == 200: 
-                        Client.response_to_recieve = response
-                        # Releasing the next thread who is expecting a response
-                        Client.Request_signal_sem.release()
-                    elif response['status'] == 255: # The recieved message is a broadcast
+                    if response['status'] == 255: # The recieved message is a broadcast
                         Client.broadCast_msg_to_recieve = response
                         print('Broadcast msg : ',response)
                         # Releasing the next thread who is expecting a broadcast message
                         Client.BroadCast_signal_sem.release()
+                    else: # If the recieved message is a response
+                        Client.response_to_recieve = response
+                        # Releasing the next thread who is expecting a response
+                        Client.Response_signal_sem.release()
+                     
                 except Exception as err:
                     break
                 if received_message.upper() == "END":
@@ -233,7 +233,7 @@ class Client:
             self.connexion.shutdown(socket.SHUT_RDWR)
 
         def stop(self):
-            # Client.Request_signal_sem._value = 10000
+            # Client.Response_signal_sem._value = 10000
             # Client.BroadCast_signal_sem._value = 10000
             self.alive = False
 

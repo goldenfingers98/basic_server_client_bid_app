@@ -1,3 +1,5 @@
+from time import sleep
+from PySide2.QtGui import QCloseEvent
 from PySide2.QtWidgets import QDialog
 from .ui.ui_BiddingRoom import Ui_BiddingRoom
 from lib.client.Client import Client
@@ -16,7 +18,6 @@ class BiddingRoom(QDialog, Ui_BiddingRoom):
         self.assetStartingFrom.setText(str(asset['_Asset__starting_price']))
         self.AssetCurrentPrice.setText(str(asset['_Asset__last_price']))
         self.lastBidder.setText(str(asset['_Asset__buyer']['_Buyer__id']))
-        self.proposalValue.setMinimum(asset['_Asset__last_price'])
         self.timeInput.setText(str(current_time)+' s')
         # Setting decrementor
         self.__decrementor = threading.Thread(target=self.__decrement,name="decrementor")
@@ -27,22 +28,6 @@ class BiddingRoom(QDialog, Ui_BiddingRoom):
         # Setting stream controller
         self.__stream_controller = threading.Thread(target=self.__control_stream,name="stream controller")
         self.__stream_controller.start()
-        # 
-        self.__connct_signals_to_slots()
-
-    def __connct_signals_to_slots(self):
-        self.bidBtn.clicked.connect(self.postBid)
-
-    def postBid(self):
-        if self.proposalValue.value() > float(self.AssetCurrentPrice.text()):
-            bid_data = {
-                'buyer_id' : BUYER_ID,
-                'proposition' : self.proposalValue.value()
-            }
-            self.bidBtn.setEnabled(False)
-            Client.post("/asset/bid",(bid_data)).then(self.__enableBitBtn)
-        else:
-            QMessageBox.warning(self,"Bidding Room","Please select a price higher than the current ammount!")
 
 
     def __control_stream(self):
@@ -57,8 +42,8 @@ class BiddingRoom(QDialog, Ui_BiddingRoom):
                 self.assetId.setText(str(asset['_Asset__ref']))
                 self.assetStartingFrom.setText(str(asset['_Asset__starting_price']))
                 self.AssetCurrentPrice.setText(str(asset['_Asset__last_price']))
+                self.lastProposal.setText(str(asset['_Asset__last_price']))
                 self.lastBidder.setText(str(buyer_id))
-                self.proposalValue.setMinimum(asset['_Asset__last_price'])
                 # Setting chrono value
                 BiddingRoom.biddingLock.acquire() # Getting permission
                 print('current : ',number)
@@ -78,15 +63,11 @@ class BiddingRoom(QDialog, Ui_BiddingRoom):
                 BiddingRoom.biddingLock.release()
             else:
                 BiddingRoom.biddingLock.release()
-                self.bidBtn.setEnabled(False)
                 self.__listener_flag = False
                 Client.set_listening_status(False)
                 self.__listener.streamLock.release() # Bidding is finished and we must unleash the stream controller
                 break
 
-    def __enableBitBtn(self,res):
-        self.bidBtn.setEnabled(True)
-    
     def closeEvent(self, arg__1: QCloseEvent) -> None:
         self.__listener_flag = False
         Client.set_listening_status(False)

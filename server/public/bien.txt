@@ -1,2 +1,3 @@
 Référence Objet	Prix Départ	Dernier Prix	Etat	Acheteur
-150	0.0	138	Disponible	1
+150	0.0	143	Vendu	1
+154	251.45	251.45	Disponible	None

@@ -65,6 +65,7 @@ class BiddingRoom(QDialog,Ui_BiddingRoom):
                 self.assetId.setText(str(asset['_Asset__ref']))
                 self.assetStartingFrom.setText(str(asset['_Asset__starting_price']))
                 self.AssetCurrentPrice.setText(str(asset['_Asset__last_price']))
+                self.lastProposal.setText(str(asset['_Asset__last_price']))
                 self.lastBidder.setText(str(buyer_id))
                 self.proposalValue.setMinimum(asset['_Asset__last_price'])
                 # Setting chrono value

@@ -9,6 +9,15 @@ class AssetRepository(Repository):
     CLASS = Asset
 
     @staticmethod
+    def exists(assetRef):
+        try:
+            AssetRepository.findById(assetRef)
+            return True
+        except Repository.RepositoryException as err:
+            return False
+
+
+    @staticmethod
     def findAssetsByState(state):
         return [asset for asset in AssetRepository.entities if asset.getState().upper() == state.upper()]
 

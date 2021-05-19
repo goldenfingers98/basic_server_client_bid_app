@@ -13,10 +13,10 @@ PORT = int(CONFIG["PORT"])
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-     # Open a session
-    # Client.openSession(HOST,PORT)
+    # Open a session
+    Client.openSession(HOST,PORT)
     # Start the application
     comissionerView = ComissionerView()
     app.exec_()
     # Quit the session
-    # Client.killSession()
+    Client.killSession()

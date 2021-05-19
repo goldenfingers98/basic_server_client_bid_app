@@ -51,7 +51,7 @@ class Asset(Entity):
             self.__ref = ref
         self.__starting_price = starting_price
         self.__last_price = starting_price
-        self.__state = 'Vendu'
+        self.__state = 'Disponible'
         self.__buyer = buyer
 
     def getRef(self):

@@ -96,4 +96,23 @@ def pay(request):
     buyer = BuyerController.getBuyerById(request['id'])
     buyer.setBillAmmount(0)
     BuyerController.updateBuyerData(buyer)
-    return None
+    return None 
+
+
+def getAssets():
+    return AssetController.getAll()
+
+def addAsset(request):
+    if AssetController.exists(request['ref']):
+        raise Exception("Cannot add asset.\nAsset exists already.")
+    asset = Asset(
+        ref=request['ref'],
+        starting_price=request['startingPrice']
+    )
+    AssetController.add(asset)
+    return asset
+
+def getAsset(request):
+    if AssetController.exists(request['ref']):
+        return AssetController.getAssetByRef(request['ref'])
+    raise Exception("Asset not found.")

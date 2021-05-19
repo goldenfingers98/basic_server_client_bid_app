@@ -76,6 +76,14 @@ class AssetService:
             # asset doesn't exist
             pass
 
+    @classmethod
+    def exists(cls,assetRef):
+        return cls.__assetRepository.exists(assetRef)
+
+    @classmethod
+    def getAssetByRef(cls,assetRef):
+        return cls.__assetRepository.findById(assetRef)
+
 class HistoryService:
     __fileLock = Lock()
     __historyRepository = HistoryRepository()

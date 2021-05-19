@@ -12,6 +12,8 @@ class BuyerController:
     def updateBuyerData(cls,buyer):
         cls.__buyerService.updateBuyer(buyer)
 
+    
+
 
 
 class HistoryController:
@@ -45,3 +47,19 @@ class AssetController:
     @classmethod
     def updateAsset(cls,asset):
         cls.__assetService.updateAsset(asset)
+
+    @classmethod
+    def getAll(cls):
+        return cls.__assetService.getAssets()
+
+    @classmethod
+    def exists(cls,assetRef):
+        return cls.__assetService.exists(assetRef)
+
+    @classmethod
+    def add(cls,asset):
+        cls.__assetService.addAsset(asset)
+
+    @classmethod
+    def getAssetByRef(cls,assetRef):
+        return cls.__assetService.getAssetByRef(assetRef)
