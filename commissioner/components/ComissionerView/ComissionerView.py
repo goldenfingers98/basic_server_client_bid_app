@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QMainWindow, QMessageBox
 from .ui.ui_comissionerView import Ui_ComissionerView
 from components.BiddingRoom.BiddingRoom import BiddingRoom
 from components.AssetListView.AssetListView import AssetListView
+from components.BillView.BillView import BillView
 from lib.client.Client import Client
 
 class ComissionerView(QMainWindow, Ui_ComissionerView):
@@ -18,6 +19,7 @@ class ComissionerView(QMainWindow, Ui_ComissionerView):
     def __connect_signals_to_slots(self):
         self.biddingRoom.clicked.connect(self.__open_biddingRoom)
         self.assetListView.clicked.connect(self.__open_assetListView)
+        self.buyersBillView.clicked.connect(self.__open_billView)
 
 
     def __open_biddingRoom(self):
@@ -35,6 +37,8 @@ class ComissionerView(QMainWindow, Ui_ComissionerView):
     def __open_biddingRoom(self):
         Client.get("/assets/available").then(self.__openBiddingRoomCallback)
 
+    def __open_billView(self):
+        billView = BillView()
     # Callbacks here
 
     def __openBiddingRoomCallback(self,res):

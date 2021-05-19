@@ -12,7 +12,17 @@ class BuyerController:
     def updateBuyerData(cls,buyer):
         cls.__buyerService.updateBuyer(buyer)
 
+    @classmethod
+    def getAll(cls):
+        return cls.__buyerService.getBuyers()
+
+    @classmethod
+    def exists(cls,id):
+        return cls.__buyerService.exists(id)
     
+    @classmethod
+    def add(cls,buyer):
+        cls.__buyerService.addBuyer(buyer)
 
 
 

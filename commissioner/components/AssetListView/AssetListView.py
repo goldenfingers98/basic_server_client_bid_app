@@ -15,8 +15,6 @@ class AssetListView(QDialog, Ui_AssetListView):
         # 
         # 
         self.__initialize()
-        #
-        self.show()
 
 
     def __initialize(self):

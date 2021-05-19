@@ -5,6 +5,14 @@ from src.models.models import *
 class BuyerRepository(Repository):
     CLASS = Buyer
 
+    @staticmethod
+    def exists(id):
+        try:
+            BuyerRepository.findById(id)
+            return True
+        except Repository.RepositoryException as err:
+            return False
+
 class AssetRepository(Repository):
     CLASS = Asset
 

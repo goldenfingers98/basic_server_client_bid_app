@@ -14,6 +14,8 @@ if __name__ == '__main__':
 
     Server.post(path="/buyer/data",callable=buyerData)
     Server.post(path="/buyer/pay",callable=pay)
+    Server.post(path="/buyer/add",callable=addBuyer)
+    Server.get(path='/buyer/all',callable=getBuyers)
 
     Server.get(path="/asset/all",callable=getAssets)
     Server.post(path='/asset/add',callable=addAsset)

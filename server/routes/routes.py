@@ -116,3 +116,17 @@ def getAsset(request):
     if AssetController.exists(request['ref']):
         return AssetController.getAssetByRef(request['ref'])
     raise Exception("Asset not found.")
+
+
+def getBuyers():
+    return BuyerController.getAll()
+
+
+def addBuyer(request):
+    if BuyerController.exists(request['id']):
+        raise Exception("Cannot add buyer.\Buyer exists already.")
+    buyer = Buyer(
+        id=request['id']
+    )
+    BuyerController.add(buyer)
+    return buyer

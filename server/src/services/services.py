@@ -38,6 +38,9 @@ class BuyerService:
         except Exception as err:
             # buyer doesn't exist
             pass
+    @classmethod
+    def exists(cls,id):
+        return cls.__buyerRepository.exists(id)
 
 class AssetService:
     __fileLock = Lock()
