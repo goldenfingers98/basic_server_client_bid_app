@@ -19,3 +19,8 @@ Note that this project is for educational purpose, and it is NOT for production.
 # Repository git
 
 https://github.com/goldenfingers98/basic_server_client_bid_app/
+
+
+# Visit my portfolio
+
+https://k-softwares.ml
