@@ -1,4 +1,4 @@
-from lib.server.Server import Server
+from os import name
 from threading import Thread, Semaphore, Lock
 import socket, sys
 from json import loads, dumps
@@ -8,18 +8,30 @@ from time import sleep
 class Client:
     __HAS_SESSION =False
     __is_listening = False
-    send_lock = Lock() # To synchronize the semaphore  Send_signal_sem
-    Send_signal_sem = Semaphore(0) # To synchronize on connexion.send
-    Request_signal_sem = Semaphore(0) # To synchronize recievers on requests listening
-    BroadCast_signal_sem = Semaphore(0) # To synchronize recievers on broadcast msgs listening
+    send_lock = None # To synchronize the semaphore  Send_signal_sem
+    Send_signal_sem = None # To synchronize on connexion.send
+    Request_signal_sem = None # To synchronize recievers on requests listening
+    BroadCast_signal_sem = None # To synchronize recievers on broadcast msgs listening
     EMITTER = None
     RECIEVER = None
     request_to_send = None
     response_to_recieve = None
     broadCast_msg_to_recieve = None
+    # temp just for debugging
+    number = 0
+
+    @classmethod
+    def initialize(cls):
+        # Resetting the semaphores and locks
+        cls.send_lock = Semaphore(1) # cls.send_lock = ie Lock()
+        cls.Send_signal_sem = Semaphore(0)
+        cls.Request_signal_sem = Semaphore(0)
+        cls.BroadCast_signal_sem = Semaphore(0)
+        cls.__HAS_SESSION = False
 
     @classmethod
     def openSession(cls,host,port):
+        cls.initialize()
         connexion = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
             connexion.connect((host,port))
@@ -39,8 +51,10 @@ class Client:
         formatted_request = dumps(request).encode()
         try:
             cls.send_lock.acquire()
-            cls.request_to_send = formatted_request
-            cls.Send_signal_sem.release() # Critical ressource
+            # print("EMITTER : ",cls.EMITTER.alive)
+            if cls.EMITTER.alive:
+                cls.request_to_send = formatted_request
+                cls.Send_signal_sem.release() # Critical ressource
         except Exception as err:
             pass
         # finally:
@@ -51,22 +65,25 @@ class Client:
         response = None
         try:
             cls.Request_signal_sem.acquire()
-            response = cls.response_to_recieve
+            # print("RECIEVER : ",cls.RECIEVER.alive)
+            if cls.RECIEVER.alive:
+                response = cls.response_to_recieve
             return response
         except Exception as err:
             pass
 
     @classmethod
-    def __send_then(cls,request,callback):
+    def __send_then(cls,request):
         # Sending the response
         cls.__send(request)
+        print("Sys>>>> request sent : ",request)
         # Wait for response
         var = cls.__wait_for_response()
-        # Executing callback
-        callback(var)
+        print("Sys>>>> response : ",var)
+        return var
 
     @classmethod
-    def get(cls,path,callback):
+    def get(cls,path):
         # sleep(0.5)
         if Client.__HAS_SESSION:
             request = Client.__Request(
@@ -74,12 +91,16 @@ class Client:
                 path=path,
                 args=None
             )
-            # Sending the response and executing callback
-            thread = Thread(target=cls.__send_then,args=[request,callback])
+            # Sending the response
+            thread = cls.__Response(callable=cls.__send_then,name=f"getter {cls.number}",args=[request])
+            cls.number += 1
             thread.start()
+            return thread
+        else:
+            print("Sys>>>> Connot get, server is shutdown")
 
     @classmethod
-    def post(cls,path,callback,*args):
+    def post(cls,path,*args):
         # sleep(0.5)
         if Client.__HAS_SESSION:
             request = Client.__Request(
@@ -87,26 +108,32 @@ class Client:
                 path=path,
                 args=args
             )
-        # Sending the response and executing callback
-        thread = Thread(target=cls.__send_then,args=[request,callback])
-        thread.start()
+            # Sending the response
+            thread = cls.__Response(callable=cls.__send_then,name=f"getter {cls.number}",args=[request])
+            cls.number += 1
+            thread.start()
+        return thread
 
     @classmethod
     def set_listening_status(cls,isListening):
         cls.__is_listening = isListening
         if isListening:
-            thread = Thread(target=cls.__listen_the_broadcast_channel)
+            thread = cls.__Response(callable=cls.__listen_the_broadcast_channel,name=f"listener {cls.number}")
+            cls.number += 1
             thread.start()
+            return thread
         else:pass
 
     @classmethod
     def __listen_the_broadcast_channel(cls):
         while Client.__HAS_SESSION and cls.__is_listening:
+            sleep(0.2)
             # Getting permission to read the ressource
             cls.BroadCast_signal_sem.acquire()
             if cls.__is_listening:
                 decoded_msg = cls.broadCast_msg_to_recieve # Critical ressource
-                print(decoded_msg['message'])
+                cls.__Response.stream = decoded_msg['data']
+                cls.__Response.streamLock.release()
             else: # The Client isn't listening anymore
                 break
 
@@ -120,12 +147,6 @@ class Client:
         # Killing the broadcast channel listener
         cls.__is_listening = False
         cls.BroadCast_signal_sem.release()
-        # Resetting the semaphores and locks
-        cls.send_lock = Lock() 
-        cls.Send_signal_sem = Semaphore(0)
-        cls.Request_signal_sem = Semaphore(0)
-        cls.BroadCast_signal_sem = Semaphore(0)
-        cls.__HAS_SESSION = False
         print("Sys>>>> Client is shutdown.")
         
 
@@ -153,6 +174,7 @@ class Client:
                         # Release the next blocked emitter thread
                         Client.send_lock.release()
                     else: # Shutdown state
+                        self.stop()
                         print("Sys>>>> Emitter is shutdown")
                         break
                 except Exception as err:
@@ -161,8 +183,9 @@ class Client:
 
         def stop(self):
             # Releasing the thread before killing'em
-            Client.Send_signal_sem.release()
             self.alive = False
+            # Client.send_lock._value = 10000
+            Client.Send_signal_sem.release()
             # Closing the connexion even if the reciever is blocked on recieving
             self.connexion.shutdown(socket.SHUT_RDWR)
 
@@ -195,8 +218,9 @@ class Client:
                         Client.response_to_recieve = response
                         # Releasing the next thread who is expecting a response
                         Client.Request_signal_sem.release()
-                    else: # The recieved message is a broadcast
+                    elif response['status'] == 255: # The recieved message is a broadcast
                         Client.broadCast_msg_to_recieve = response
+                        print('Broadcast msg : ',response)
                         # Releasing the next thread who is expecting a broadcast message
                         Client.BroadCast_signal_sem.release()
                 except Exception as err:
@@ -209,6 +233,8 @@ class Client:
             self.connexion.shutdown(socket.SHUT_RDWR)
 
         def stop(self):
+            # Client.Request_signal_sem._value = 10000
+            # Client.BroadCast_signal_sem._value = 10000
             self.alive = False
 
     class __Request(dict):
@@ -223,3 +249,22 @@ class Client:
     #         super().__init__()
     #         self['status'] = status
     #         self['data'] = data
+
+    class __Response(Thread):
+        stream = None
+        streamLock = Semaphore(0)
+        def __init__(self,callable,args=None,name=None):
+            Thread.__init__(self,name=name,args=args)
+            self.callable = callable
+            self.response = None
+
+        def run(self):
+            if self._args is None:
+                self.response = self.callable()
+            else:
+                self.response = self.callable(*self._args)
+            
+
+        def then(self,callback):
+            self.join()
+            callback(self.response)
